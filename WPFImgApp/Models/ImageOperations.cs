@@ -15,6 +15,7 @@ namespace WPFImgApp.Models
             return pixelByteArray;
         }
 
+       
         public static BitmapImage bytesToBitmap(byte[] b, BitmapImage sampleImage)
         {
             int nStride = (sampleImage.PixelWidth * sampleImage.Format.BitsPerPixel) / 8;

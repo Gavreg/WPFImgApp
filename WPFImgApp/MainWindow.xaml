@@ -4,8 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFImgApp"
+        xmlns:viewModel="clr-namespace:WPFImgApp.ViewModel"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="{Binding BlendTime}" Height="450" Width="800">
     <Grid>
 
         <Grid.ColumnDefinitions>
@@ -15,15 +16,15 @@
         <Grid.RowDefinitions>
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
-        <Image Grid.Row="0" Grid.Column="0" Source="{Binding SelectedImage.Bitmap}"></Image>
-        <ListView Grid.Column="1" ItemsSource="{Binding Bitmaps, Mode=TwoWay}" SelectedItem="{Binding SelectedImage, UpdateSourceTrigger=PropertyChanged}">
-            <ListView.ItemTemplate>
+        <Image Grid.Row="0" Grid.Column="0" Source="{Binding SelectedImage}"></Image>
+        <ItemsControl Grid.Column="1" ItemsSource="{Binding Bitmaps, Mode=TwoWay}" >
+            <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <!--  <views:ImagePanelControl></views:ImagePanelControl>  -->
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition MaxWidth="50"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0">
                             <Grid.RowDefinitions>
@@ -34,7 +35,21 @@
                             <Image  Grid.Row="1"  Source="{Binding Bitmap}" MaxHeight="100"/>
                             <!--   Mode=OneTime -->
                             <Label  Grid.Row="0" Content ="{Binding Name}"></Label>
-                            <Button Grid.Row="2" Command="{Binding DoSomething}"></Button>
+                            <Grid Grid.Row="2">
+                                <Grid.Resources>
+                                    <viewModel:OpacityConverter x:Key="opacityConverter" />
+                                </Grid.Resources>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Slider Grid.Row="0" Maximum="100" Minimum="0" Interval="1" Value="{Binding Path = Opacity, Converter={StaticResource opacityConverter} }"></Slider>
+                                
+                                <ComboBox Grid.Row="1" ItemsSource="{Binding Path = DataContext.OperationsList, RelativeSource={RelativeSource AncestorType=Window}}" DisplayMemberPath="Name"  SelectedValue="{Binding SelectedOperation}" >
+
+                                </ComboBox>
+                            </Grid>
+                          
                         </Grid>
                         <Grid  Grid.Column="1">
                             <Grid.RowDefinitions>
@@ -48,8 +63,9 @@
                         </Grid>
                     </Grid>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Content="Button" HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
 
     </Grid>
 </Window>

@@ -12,25 +12,75 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using WPFImgApp.Models;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
 
 namespace WPFImgApp.ViewModel
 {
     class ImageVM : BaseViewModel
     {
         private string _Name;
-        private BitmapImage _bitmap;
-        public BitmapImage Bitmap
+        private BitmapSource _bitmap;
+        private double _opacity = 1;
+        private PerPixelOperation _selectedOperation = PerPixelOperation.getOperationsList()[0];
+
+        public byte[] Bytes { private set; get; }
+        public int OffsetX { get; set; }
+        public int OffsetY { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+
+
+
+        public PerPixelOperation SelectedOperation
+        {
+            get => _selectedOperation;
+            set
+            {
+                _selectedOperation = value;
+                OnPropertyChanged(nameof(SelectedOperation));
+            }
+        }
+
+        public double Opacity
+        {
+            get => _opacity;
+            set
+            {
+                _opacity = value;
+                OnPropertyChanged(nameof(Opacity));
+            }
+        }
+
+        public BitmapSource Bitmap
         {
             set
             {
-                _bitmap = value;
+
+                FormatConvertedBitmap converted = new FormatConvertedBitmap();
+                converted.BeginInit();
+                converted.Source = value;
+                converted.DestinationFormat = System.Windows.Media.PixelFormats.Bgra32;
+                converted.EndInit();
+
+                int stride = (int)converted.PixelWidth * (converted.Format.BitsPerPixel / 8);
+                byte[] b = new byte[converted.PixelHeight * stride];
+                converted.CopyPixels(b, stride, 0);
+
+
+
+                _bitmap = new BitmapImage();
+                Bytes = b;
+                var src = BitmapSource.Create(converted.PixelWidth, converted.PixelHeight, 96, 96, converted.Format,
+                    converted.Palette, b, stride);
+                _bitmap = src;
+
+                Width = src.PixelWidth;
+                Height = src.PixelHeight;
+
                 OnPropertyChanged(nameof(Bitmap));
             }
             get => _bitmap;
         }
-
-        public MainWindowVM Parent { set; get; }
-
 
 
         public string Name
@@ -44,16 +94,13 @@ namespace WPFImgApp.ViewModel
         }
 
         private ICommand _doSomething;
-
-        public ICommand DoSomething
+       public ICommand DoSomething
         {
             get
             {
                 return _doSomething ??= new RelayCommand(p => true, (obj) =>
                 {
-                    var b = ImageOperations.imageToBytes(Bitmap);
-                    b = b.Select(x => (byte) (x * 0.5)).ToArray();
-                    Bitmap = ImageOperations.bytesToBitmap(b,Bitmap);
+
                 });
             }
         }

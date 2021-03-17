@@ -25,17 +25,21 @@ namespace WPFImgApp
     /// </summary>
     public partial class MainWindow : Window
     {
+        private MainWindowVM vm;
         public MainWindow()
         {
             InitializeComponent();
             //var u = new Uri(new Uri(System.AppDomain.CurrentDomain.BaseDirectory), new Uri(@".\.\1.png"));
-            var vm = new MainWindowVM();
-            //vm.Bitmaps.Add(new ImageVM { Bitmap = new BitmapImage(new Uri(@"C:\Users\gavre\source\repos\WPFImgApp\WPFImgApp\img\1.png")), Name = "адын" });
-            //vm.Bitmaps.Add(new ImageVM { Bitmap = new BitmapImage(new Uri(@"C:\Users\gavre\source\repos\WPFImgApp\WPFImgApp\img\2.png")), Name = "два" });
-            //vm.Bitmaps.Add(new ImageVM { Bitmap = new BitmapImage(new Uri(@"C:\Users\gavre\source\repos\WPFImgApp\WPFImgApp\img\3.png")), Name = "тхри" });
-            //vm.Bitmaps.Add(new ImageVM { Bitmap = new BitmapImage(new Uri(@"C:\Users\gavre\source\repos\WPFImgApp\WPFImgApp\img\4.png")), Name = "чятыри" });
-
+            vm = new MainWindowVM();
             DataContext = vm;
+
+
+            vm.AddImageVM((new ImageVM { Bitmap = new BitmapImage(new Uri(@"C:\Users\gavre\source\repos\WPFImgApp\WPFImgApp\img\1.png")), Name = "адын" }));
+            vm.AddImageVM((new ImageVM { Bitmap = new BitmapImage(new Uri(@"C:\Users\gavre\source\repos\WPFImgApp\WPFImgApp\img\2.png")), Name = "два" }));
+            vm.AddImageVM((new ImageVM { Bitmap = new BitmapImage(new Uri(@"C:\Users\gavre\source\repos\WPFImgApp\WPFImgApp\img\3.png")), Name = "тхри" }));
+            vm.AddImageVM((new ImageVM { Bitmap = new BitmapImage(new Uri(@"C:\Users\gavre\source\repos\WPFImgApp\WPFImgApp\img\4.png")), Name = "чятыри" }));
+            
+           
             this.AllowDrop = true;
             this.Drop += (s, a) =>
             {
@@ -43,11 +47,19 @@ namespace WPFImgApp
                 foreach (var f in files)
                 {
                     FileInfo fi = new FileInfo(f);
-                    vm.Bitmaps.Add(new ImageVM { Bitmap = new BitmapImage(new Uri(f)), Name = fi.Name, Parent = vm });
+                    vm.AddImageVM((new ImageVM { Bitmap = new BitmapImage(new Uri(f)), Name = fi.Name}));
                 }
             };
 
         }
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Task t = new Task( () =>
+                {
+                   vm.CalculateLayers();
+                });
+                t.RunSynchronously();
+        }
     }
 }

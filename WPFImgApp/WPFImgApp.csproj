@@ -67,9 +67,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Models\ImageOperations.cs" />
-    <Compile Include="ViewModel\RelayComand.cs" />
+    <Compile Include="ViewModel\OpacityConverter.cs" />
+    <Compile Include="ViewModel\PerPixelOperation.cs" />
+    <Compile Include="Util\RelayComand.cs" />
     <Compile Include="ViewModel\MainWindowVM.cs" />
-    <Compile Include="ViewModel\BaseViewModel.cs" />
+    <Compile Include="Util\BaseViewModel.cs" />
     <Compile Include="ViewModel\ImageVM.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
