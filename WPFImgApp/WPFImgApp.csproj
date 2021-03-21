@@ -25,6 +25,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,6 +36,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -67,6 +69,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Models\ImageOperations.cs" />
+    <Compile Include="Util\BaseConverter.cs" />
+    <Compile Include="Util\SImpleTaskSqueue.cs" />
     <Compile Include="ViewModel\OpacityConverter.cs" />
     <Compile Include="ViewModel\PerPixelOperation.cs" />
     <Compile Include="Util\RelayComand.cs" />

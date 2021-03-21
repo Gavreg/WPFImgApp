@@ -13,7 +13,7 @@ namespace WPFImgApp.ViewModel
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (double) value * 100;
+            return Math.Round( (double) value * 100);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

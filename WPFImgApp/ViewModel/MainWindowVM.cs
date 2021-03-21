@@ -13,17 +13,25 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using WPFImgApp.Models;
+using WPFImgApp.Util;
+
 
 namespace WPFImgApp.ViewModel
 {
     class MainWindowVM : BaseViewModel
     {
         private BitmapSource _selectedImage;
-        public ObservableCollection<ImageVM> Bitmaps { set; get; }
+        private ObservableCollection<Task> operations = new ObservableCollection<Task>();
+        private BitmapSource _canvas;
+        private byte[] canvas_bytes;
+
         private ICommand moveUpCommand;
         private ICommand moveDownCommand;
         private ICommand deleteCommand;
-        
+        private SimpleTasksQueue tasks = new SimpleTasksQueue();
+
+
+        public ObservableCollection<ImageVM> Bitmaps { set; get; }
         private int _blendTime;
         public int BlendTime
         {
@@ -37,6 +45,7 @@ namespace WPFImgApp.ViewModel
 
         public List<PerPixelOperation> OperationsList => PerPixelOperation.getOperationsList();
 
+
         public ICommand MoveUpCommand
         {
             get
@@ -46,8 +55,7 @@ namespace WPFImgApp.ViewModel
                     
                     var param = obj as ImageVM;
                     var ii = Bitmaps.IndexOf(param);
-                    Bitmaps.Remove(param);
-                    Bitmaps.Insert(ii - 1, param);
+                    Bitmaps.Move(ii, ii - 1);
 
                 });
             }
@@ -59,12 +67,9 @@ namespace WPFImgApp.ViewModel
             {
                 return moveDownCommand ??= new RelayCommand(_canMoveDown, (obj) =>
                 {
-                   
                     var param = obj as ImageVM;
                     var ii = Bitmaps.IndexOf(param);
-                    Bitmaps.Remove(param);
-                    Bitmaps.Insert(ii + 1, param);
-
+                    Bitmaps.Move(ii,ii+1);
                 });
             }
         }
@@ -82,100 +87,98 @@ namespace WPFImgApp.ViewModel
 
         public void AddImageVM(ImageVM vm)
         {
-            vm.PropertyChanged += (s,prop_name) =>
+           vm.PropertyChanged += (s,prop_name) =>
             {
                 if (prop_name.PropertyName == nameof(ImageVM.Opacity) ||
-                    prop_name.PropertyName == nameof(ImageVM.SelectedOperation) )
+                    prop_name.PropertyName == nameof(ImageVM.SelectedOperation) ||
+                    prop_name.PropertyName == nameof(ImageVM.OffsetX) ||
+                    prop_name.PropertyName == nameof(ImageVM.OffsetY)     )
                 {
-                    CalculateLayers();
+                    tasks.AddTask(new Task(CalculateLayers));
                 }
             };
+            tasks.Wait();
             Bitmaps.Add(vm);
         }
 
         public BitmapSource SelectedImage
         {
-            get => _selectedImage;
+            get => _canvas;
             set
             {
-                _selectedImage = value;
+                _canvas = value;
                 OnPropertyChanged(nameof(SelectedImage));
             }
         }
 
         public MainWindowVM()
         {
+            tasks.StartQueue();
             Bitmaps = new ObservableCollection<ImageVM>();
             _canMoveDown = (obj) => Bitmaps.LastOrDefault() != (obj as ImageVM);
             _canMoveUp = (obj) => Bitmaps.FirstOrDefault() != (obj as ImageVM);
             Bitmaps.CollectionChanged += (s, a) =>
             {
-               // CalculateLayers();
+                updateCanvas();
+                tasks.AddTask(new Task(CalculateLayers));
             };
         }
 
-        public void CalculateLayers()
+        private void updateCanvas()
         {
+            int max_width = Bitmaps.Max(x => x.Width);
+            int max_height = Bitmaps.Max(x => x.Height);
+            //canvas_bytes = new byte[max_width * max_height * 4];
+            _canvas = new WriteableBitmap(max_width, max_height, 96, 96, PixelFormats.Bgra32, null);
+        }
+
+        public unsafe void CalculateLayers()
+        {
+            
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
-            
-            
-            // Get the elapsed time as a TimeSpan value.
+
+            var props = (from b in Bitmaps
+                select new { offX = b.OffsetX, offY = b.OffsetY, op = b.Opacity, w = b.Width, h = b.Height, so = b.SelectedOperation }).ToArray();
+
             TimeSpan ts = stopWatch.Elapsed;
             int max_width = Bitmaps.Max(x => x.Width);
             int max_height = Bitmaps.Max(x => x.Height);
-            byte[] bytes = new byte[max_width * max_height * 4];
-            Parallel.For(0, max_width * max_height, (i) =>
-            {
-                int y = i / max_width;
-                int x = i - y * max_width;
-
-
-                int _x = x - Bitmaps[0].OffsetX;
-                int _y = y - Bitmaps[0].OffsetY;
-                int _i = _y * Bitmaps[0].Width + _x;
-
-                /*if (_x > 0 && _x < Bitmaps[0].Width && _y > 0 && _y < Bitmaps[0].Height)
-                {
-                    bytes[4 * i + 0] = Bitmaps[0].Bytes[4 * _i + 0];
-                    bytes[4 * i + 1] = Bitmaps[0].Bytes[4 * _i + 1];
-                    bytes[4 * i + 2] = Bitmaps[0].Bytes[4 * _i + 2];
-                    bytes[4 * i + 3] = Bitmaps[0].Bytes[4 * _i + 3];
-
-                }*/
-                for (int j = 0; j < Bitmaps.Count; ++j)
-                {
-                    _x = x - Bitmaps[j].OffsetX;
-                    _y = y - Bitmaps[j].OffsetY;
-                    _i = _y * Bitmaps[j].Width + _x;
-
-                    if (_x > 0 && _x < Bitmaps[j].Width && _y > 0 && _y < Bitmaps[j].Height)
-                        for (int c = 0; c <= 3; c++)
-                           bytes[i * 4 + c] = Bitmaps[j].SelectedOperation.ByteOperation(Bitmaps[j].Bytes[_i * 4 + c], bytes[i * 4 + c], Bitmaps[j].Opacity);
-                        
-                }//j++
-            });
-
-
-            //WriteableBitmap wb = new WriteableBitmap(max_width, max_height, 96, 96, PixelFormats.Bgra32,
-            //    null);
-            //wb.Lock();
-            //Marshal.Copy(bytes, 0, wb.BackBuffer, bytes.Length);
-            //wb.AddDirtyRect(new Int32Rect(0,0,max_width,max_height));
-            //wb.Unlock();
-            //SelectedImage = wb;
-
             
-            var bs = BitmapSource.Create(max_width, max_height, 96, 96, PixelFormats.Bgra32, null, bytes,
-                max_width * PixelFormats.Bgra32.BitsPerPixel / 8);
-            SelectedImage = bs;
-            bs.Freeze();
+            var po = new ParallelOptions()
+            {
+                //MaxDegreeOfParallelism = 1
+            };
+            byte[] bytes = new byte[max_width * max_height * 4];
+               Parallel.For(0, max_width * max_height, po, (i) =>
+                {
+                    int y = i / max_width;
+                    int x = i - y * max_width;
+
+                    int _x = x - props[0].offX;
+                    int _y = y - props[0].offY;
+                    int _i = _y * props[0].w + _x;
+
+                    for (int j = 0; j < props.Length; ++j)
+                    {
+                        _x = x - props[j].offX;
+                        _y = y - props[j].offY;
+                        _i = _y * props[j].w + _x;
+
+                        if (_x > 0 && _x < props[j].w && _y > 0 && _y < props[j].h)
+                            for (int c = 0; c <= 3; c++)
+                            {
+                                bytes[i * 4 + c] = props[j].so.ByteOperation(Bitmaps[j].Bytes[_i * 4 + c], bytes[i * 4 + c], props[j].op);
+                            }
+                    }//j++
+                });
+
+            BitmapSource so = BitmapSource.Create(max_width,max_height,96,96,PixelFormats.Bgra32,null,bytes,max_width*4);
+            so.Freeze();
+            SelectedImage = so;
 
             stopWatch.Stop();
             BlendTime = (int)stopWatch.ElapsedMilliseconds;
-            
-
-
         }
     }
 }

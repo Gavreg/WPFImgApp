@@ -22,10 +22,30 @@ namespace WPFImgApp.ViewModel
         private BitmapSource _bitmap;
         private double _opacity = 1;
         private PerPixelOperation _selectedOperation = PerPixelOperation.getOperationsList()[0];
+        private int _offsetX;
+        private int _offsetY;
 
         public byte[] Bytes { private set; get; }
-        public int OffsetX { get; set; }
-        public int OffsetY { get; set; }
+
+        public int OffsetX
+        {
+            get => _offsetX;
+            set
+            {
+                _offsetX = value;
+                OnPropertyChanged(nameof(OffsetX));
+            }
+        }
+
+        public int OffsetY
+        {
+            get => _offsetY;
+            set
+            {
+                _offsetY = value;
+                OnPropertyChanged(nameof(OffsetY));
+            }
+        }
         public int Width { get; set; }
         public int Height { get; set; }
 

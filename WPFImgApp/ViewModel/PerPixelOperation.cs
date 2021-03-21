@@ -23,7 +23,7 @@ namespace WPFImgApp.Models
                 new PerPixelOperation()
                 {
                     Name = "Normal",
-                    ByteOperation = (a, b,o) => (byte)(a)
+                    ByteOperation = (a, b,o) => (byte)(a*o + b*(1-o))
                 },
                 new PerPixelOperation()
                 {
