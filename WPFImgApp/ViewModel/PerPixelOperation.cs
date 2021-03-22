@@ -39,7 +39,18 @@ namespace WPFImgApp.Models
                 {
                     Name = "Max",
                     ByteOperation = (a, b,o) => (byte)Math.Max(a,b)
-                }
+                },
+                new PerPixelOperation()
+                {
+                    Name = "Geom",
+                    ByteOperation = (a, b,o) => (byte)Math.Sqrt(a*b)
+                },
+                new PerPixelOperation()
+                {
+                    Name = "Sr",
+                    ByteOperation = (a, b,o) => (byte) ((a+b)/2)
+                },
+
             };
 
 

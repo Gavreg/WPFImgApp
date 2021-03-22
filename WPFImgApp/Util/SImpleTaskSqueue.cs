@@ -30,8 +30,8 @@ namespace WPFImgApp.Util
                     var i = tasks.IndexOf(t);
 
                     _currentTask = t;
-                    t.Start();
-                    t.Wait();
+                    t.RunSynchronously();
+                   
                     _currentTask = null;
 
                     tasks.RemoveRange(0, i + 1);

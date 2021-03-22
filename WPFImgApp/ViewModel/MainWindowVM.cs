@@ -52,11 +52,9 @@ namespace WPFImgApp.ViewModel
             {
                 return moveUpCommand ??= new RelayCommand(_canMoveUp, (obj) =>
                 {
-                    
                     var param = obj as ImageVM;
                     var ii = Bitmaps.IndexOf(param);
                     Bitmaps.Move(ii, ii - 1);
-
                 });
             }
         }
@@ -89,10 +87,13 @@ namespace WPFImgApp.ViewModel
         {
            vm.PropertyChanged += (s,prop_name) =>
             {
-                if (prop_name.PropertyName == nameof(ImageVM.Opacity) ||
-                    prop_name.PropertyName == nameof(ImageVM.SelectedOperation) ||
-                    prop_name.PropertyName == nameof(ImageVM.OffsetX) ||
-                    prop_name.PropertyName == nameof(ImageVM.OffsetY)     )
+                if (prop_name.PropertyName == nameof(ImageVM.Opacity)
+                    || prop_name.PropertyName == nameof(ImageVM.SelectedOperation)
+                    || prop_name.PropertyName == nameof(ImageVM.OffsetX) 
+                    || prop_name.PropertyName == nameof(ImageVM.OffsetY)
+                    || prop_name.PropertyName == nameof(ImageVM.R)
+                    || prop_name.PropertyName == nameof(ImageVM.G)
+                    || prop_name.PropertyName == nameof(ImageVM.B)   )
                 {
                     tasks.AddTask(new Task(CalculateLayers));
                 }
@@ -139,7 +140,16 @@ namespace WPFImgApp.ViewModel
             stopWatch.Start();
 
             var props = (from b in Bitmaps
-                select new { offX = b.OffsetX, offY = b.OffsetY, op = b.Opacity, w = b.Width, h = b.Height, so = b.SelectedOperation }).ToArray();
+                select new { offX = b.OffsetX, 
+                    offY = b.OffsetY, 
+                    op = b.Opacity, 
+                    w = b.Width, 
+                    h = b.Height, 
+                    so = b.SelectedOperation, 
+                    r = b.R, 
+                    g = b.G, 
+                    b = b.B
+                }).ToArray();
 
             TimeSpan ts = stopWatch.Elapsed;
             int max_width = Bitmaps.Max(x => x.Width);
@@ -165,11 +175,27 @@ namespace WPFImgApp.ViewModel
                         _y = y - props[j].offY;
                         _i = _y * props[j].w + _x;
 
+                        var channels = new(int offset, bool enabled)[] { 
+                                (0, props[j].b), 
+                                (1, props[j].g),
+                                (2,props[j].r), 
+                                /*A:*/(3, true)
+                        };
+
                         if (_x > 0 && _x < props[j].w && _y > 0 && _y < props[j].h)
-                            for (int c = 0; c <= 3; c++)
+                        {
+                            foreach (var c in channels)
                             {
-                                bytes[i * 4 + c] = props[j].so.ByteOperation(Bitmaps[j].Bytes[_i * 4 + c], bytes[i * 4 + c], props[j].op);
+                                if (c.enabled)
+                                {
+                                    bytes[i * 4 + c.offset] = props[j].so.ByteOperation(
+                                        Bitmaps[j].Bytes[_i * 4 + c.offset],
+                                        bytes[i * 4 + c.offset],
+                                        props[j].op);
+                                }
                             }
+                        }
+  
                     }//j++
                 });
 

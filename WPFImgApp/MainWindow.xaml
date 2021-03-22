@@ -33,7 +33,15 @@
                                     <RowDefinition></RowDefinition>
                                     <RowDefinition></RowDefinition>
                                 </Grid.RowDefinitions>
-                                <Image  Grid.Row="1"  Source="{Binding Bitmap}" MaxHeight="100"/>
+                                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                    <Image Margin="5" Source="{Binding Bitmap}" MaxHeight="100"/>
+                                    <StackPanel Orientation="Vertical">
+                                        <CheckBox Margin="5" IsChecked="{Binding R}">R</CheckBox>
+                                        <CheckBox Margin="5" IsChecked="{Binding G}">G</CheckBox>
+                                        <CheckBox Margin="5" IsChecked="{Binding B}">B</CheckBox>
+                                    </StackPanel>
+                                </StackPanel>
+                                
                                 <!--   Mode=OneTime -->
                                 <Label  Grid.Row="0" Content ="{Binding Name}"></Label>
                                 <Grid Grid.Row="2">

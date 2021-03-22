@@ -24,6 +24,37 @@ namespace WPFImgApp.ViewModel
         private PerPixelOperation _selectedOperation = PerPixelOperation.getOperationsList()[0];
         private int _offsetX;
         private int _offsetY;
+        private bool _r = true;
+        private bool _g = true;
+        private bool _b = true;
+
+        public bool R
+        {
+            get => _r;
+            set
+            {
+                _r = value;
+                OnPropertyChanged(nameof(R));
+            }
+        }
+        public bool G
+        {
+            get => _g;
+            set
+            {
+                _g = value;
+                OnPropertyChanged(nameof(G));
+            }
+        }
+        public bool B
+        {
+            get => _b;
+            set
+            {
+                _b = value;
+                OnPropertyChanged(nameof(B));
+            }
+        }
 
         public byte[] Bytes { private set; get; }
 
