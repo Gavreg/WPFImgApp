@@ -184,15 +184,12 @@ namespace WPFImgApp.ViewModel
 
                         if (_x > 0 && _x < props[j].w && _y > 0 && _y < props[j].h)
                         {
-                            foreach (var c in channels)
+                            foreach (var c in channels.Where( x=> x.enabled))
                             {
-                                if (c.enabled)
-                                {
                                     bytes[i * 4 + c.offset] = props[j].so.ByteOperation(
                                         Bitmaps[j].Bytes[_i * 4 + c.offset],
                                         bytes[i * 4 + c.offset],
                                         props[j].op);
-                                }
                             }
                         }
   

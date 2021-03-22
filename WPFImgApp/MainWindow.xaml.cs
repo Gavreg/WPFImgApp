@@ -52,14 +52,5 @@ namespace WPFImgApp
             };
 
         }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            Task t = new Task( () =>
-                {
-                   vm.CalculateLayers();
-                });
-                t.RunSynchronously();
-        }
     }
 }
