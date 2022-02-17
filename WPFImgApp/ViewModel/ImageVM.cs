@@ -27,6 +27,7 @@ namespace WPFImgApp.ViewModel
         private bool _r = true;
         private bool _g = true;
         private bool _b = true;
+        private string _sizeString = "";
 
         public bool R
         {
@@ -53,6 +54,16 @@ namespace WPFImgApp.ViewModel
             {
                 _b = value;
                 OnPropertyChanged(nameof(B));
+            }
+        }
+
+        public string SizeString
+        {
+            get => _sizeString;
+            set
+            {
+                _sizeString = value;
+                OnPropertyChanged(nameof(SizeString));
             }
         }
 
@@ -121,12 +132,13 @@ namespace WPFImgApp.ViewModel
 
                 _bitmap = new BitmapImage();
                 Bytes = b;
-                var src = BitmapSource.Create(converted.PixelWidth, converted.PixelHeight, 96, 96, converted.Format,
+                var src = BitmapSource.Create(converted.PixelWidth, converted.PixelHeight, converted.DpiX, converted.DpiY, converted.Format,
                     converted.Palette, b, stride);
                 _bitmap = src;
 
                 Width = src.PixelWidth;
                 Height = src.PixelHeight;
+                SizeString = $"{Width}x{Height} DPI: {Math.Round(converted.DpiX,0)}x{Math.Round(converted.DpiY,0)}";
 
                 OnPropertyChanged(nameof(Bitmap));
             }

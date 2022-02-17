@@ -33,23 +33,47 @@ namespace WPFImgApp
             vm = new MainWindowVM();
             DataContext = vm;
 
-
+            /*
             vm.AddImageVM((new ImageVM { Bitmap = new BitmapImage(new Uri(@"C:\Users\gavre\source\repos\WPFImgApp\WPFImgApp\img\1.png")), Name = "адын" }));
             vm.AddImageVM((new ImageVM { Bitmap = new BitmapImage(new Uri(@"C:\Users\gavre\source\repos\WPFImgApp\WPFImgApp\img\2.png")), Name = "два" }));
             vm.AddImageVM((new ImageVM { Bitmap = new BitmapImage(new Uri(@"C:\Users\gavre\source\repos\WPFImgApp\WPFImgApp\img\3.png")), Name = "тхри" }));
             vm.AddImageVM((new ImageVM { Bitmap = new BitmapImage(new Uri(@"C:\Users\gavre\source\repos\WPFImgApp\WPFImgApp\img\4.png")), Name = "чятыри" }));
             
-           
+           */
             this.AllowDrop = true;
+            
             this.Drop += (s, a) =>
             {
+                List<string> failed_images = new List<string>();
+
                 string[] files = (string[])a.Data.GetData(DataFormats.FileDrop);
                 foreach (var f in files)
                 {
                     FileInfo fi = new FileInfo(f);
-                    vm.AddImageVM((new ImageVM { Bitmap = new BitmapImage(new Uri(f)), Name = fi.Name}));
+                    try
+                    {
+                        vm.AddImageVM((new ImageVM { Bitmap = new BitmapImage(new Uri(f)), Name = fi.Name }));
+                    }
+                    catch (Exception e)
+                    {
+                        failed_images.Add(f.ToString());
+                    }
+
+                }
+
+                if (failed_images.Count != 0)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var str in failed_images)
+                    {
+                        sb.AppendLine(str);
+                    }
+
+                    MessageBox.Show(sb.ToString(), "Error in images", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             };
+
+
 
         }
     }

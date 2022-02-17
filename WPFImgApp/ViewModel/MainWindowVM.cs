@@ -24,6 +24,7 @@ namespace WPFImgApp.ViewModel
         private ObservableCollection<Task> operations = new ObservableCollection<Task>();
         private BitmapSource _canvas;
         private byte[] canvas_bytes;
+        private string _ImageSizeString = "0x0";
 
         private ICommand moveUpCommand;
         private ICommand moveDownCommand;
@@ -42,6 +43,19 @@ namespace WPFImgApp.ViewModel
                 OnPropertyChanged(nameof(BlendTime));
             }
         }
+
+        public string ImageSizeString
+        {
+            get => _ImageSizeString;
+            set
+            {
+                _ImageSizeString = value;
+                OnPropertyChanged(nameof(ImageSizeString));
+            }
+        }
+
+        public Visibility isEmpty => (Bitmaps.Count == 0) ? Visibility.Visible : Visibility.Hidden;
+           
 
         public List<PerPixelOperation> OperationsList => PerPixelOperation.getOperationsList();
 
@@ -120,8 +134,18 @@ namespace WPFImgApp.ViewModel
             _canMoveUp = (obj) => Bitmaps.FirstOrDefault() != (obj as ImageVM);
             Bitmaps.CollectionChanged += (s, a) =>
             {
-                updateCanvas();
-                tasks.AddTask(new Task(CalculateLayers));
+                if (Bitmaps.Count != 0)
+                {
+                    updateCanvas();
+                    tasks.AddTask(new Task(CalculateLayers));
+                    
+                }
+                else
+                {
+                    SelectedImage = null;
+                }
+                OnPropertyChanged(nameof(isEmpty));
+
             };
         }
 
@@ -132,6 +156,8 @@ namespace WPFImgApp.ViewModel
             //canvas_bytes = new byte[max_width * max_height * 4];
             _canvas = new WriteableBitmap(max_width, max_height, 96, 96, PixelFormats.Bgra32, null);
         }
+
+        byte[] bytes = Array.Empty<byte>();
 
         public unsafe void CalculateLayers()
         {
@@ -154,13 +180,14 @@ namespace WPFImgApp.ViewModel
             TimeSpan ts = stopWatch.Elapsed;
             int max_width = Bitmaps.Max(x => x.Width);
             int max_height = Bitmaps.Max(x => x.Height);
+            ImageSizeString = $"{max_width} x {max_height}";
+            if (bytes.Length != max_width * max_height * 4)
+                bytes = new byte[max_width * max_height * 4];
+            else
+               Array.Clear(bytes,0,bytes.Length);
             
-            var po = new ParallelOptions()
-            {
-                //MaxDegreeOfParallelism = 1
-            };
-            byte[] bytes = new byte[max_width * max_height * 4];
-               Parallel.For(0, max_width * max_height, po, (i) =>
+
+            Parallel.For(0, max_width * max_height,  (i) =>
                 {
                     int y = i / max_width;
                     int x = i - y * max_width;
