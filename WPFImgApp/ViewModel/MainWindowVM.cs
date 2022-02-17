@@ -186,10 +186,10 @@ namespace WPFImgApp.ViewModel
                         {
                             foreach (var c in channels.Where( x=> x.enabled))
                             {
-                                    bytes[i * 4 + c.offset] = props[j].so.ByteOperation(
-                                        Bitmaps[j].Bytes[_i * 4 + c.offset],
-                                        bytes[i * 4 + c.offset],
-                                        props[j].op);
+                                byte tmp = (byte)(props[j].so.ByteOperation(Bitmaps[j].Bytes[_i * 4 + c.offset],
+                                                                            bytes[i * 4 + c.offset]));
+                                bytes[i * 4 + c.offset] = (byte)((byte)(tmp * props[j].op) +
+                                                                 (byte)(bytes[i * 4 + c.offset] * (1 -  props[j].op)));
                             }
                         }
   
