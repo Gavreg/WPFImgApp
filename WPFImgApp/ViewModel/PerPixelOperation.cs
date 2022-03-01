@@ -34,6 +34,12 @@ namespace WPFImgApp.Models
 
                 new PerPixelOperation()
                 {
+                    Name = "devide",
+                    ByteOperation = (a, b,o) => (byte)( 1.0 * b / a )
+                },
+
+                new PerPixelOperation()
+                {
                     Name = "Sum",
                     ByteOperation = (a, b,o) => (byte)(a+b)
                 },
